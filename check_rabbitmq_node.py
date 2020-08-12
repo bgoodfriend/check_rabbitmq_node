@@ -62,8 +62,6 @@ parser.add_argument('-user', help='RabbitMQ username',
 parser.add_argument('-password', help='RabbitMQ password',
                     default='guest')
 parser.add_argument('-ssl', help='Use SSL', action='store_true')
-parser.add_argument('-rabbitname', help='Rabbit name (default: rabbit)',
-                    default='rabbit')
 parser.add_argument('-metric', help='Metric to check (default: mem_used)',
                     default='mem_used')
 parser.add_argument('-metric_limit',
