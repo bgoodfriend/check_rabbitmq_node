@@ -12,7 +12,7 @@ parser.add_argument('-hostname', help='RabbitMQ host name',
 parser.add_argument('-port', help='RabbitMQ port',
                     default='15672')
 parser.add_argument('-node', help='RabbitMQ node',
-                    default = "")
+                    default="")
 parser.add_argument('-user', help='RabbitMQ username',
                     default='guest')
 parser.add_argument('-password', help='RabbitMQ password',
@@ -20,6 +20,11 @@ parser.add_argument('-password', help='RabbitMQ password',
 parser.add_argument('-ssl', help='Use SSL', action='store_true')
 parser.add_argument('-rabbitname', help='Rabbit name (default: rabbit)',
                     default='rabbit')
+parser.add_argument('-metric', help='Metric to check (default: mem_used)',
+                    default='mem_used')
+parser.add_argument('-metric_limit',
+                    help='Metric to check (default: mem_used)',
+                    default='mem_limit')
 
 args = parser.parse_args()
 
@@ -27,10 +32,10 @@ args = parser.parse_args()
 # https://nagios-plugins.org/doc/guidelines.html
 
 # This script consumes typical http://<rabbitmqhost>/api/nodes
-# For a complete RabbitMQ solution, additionally test at least 
+# For a complete RabbitMQ solution, additionally test at least
 # http://<rabbitmqhost>/api/aliveness-test/
 
-# Another approach to monitoring RabbitMQ in containers, is to let the 
+# Another approach to monitoring RabbitMQ in containers, is to let th4
 # containers export their own metrics to Prometheus.  Examples:
 # https://github.com/kbudde/rabbitmq_exporter
 # https://github.com/deadtrickster/prometheus_rabbitmq_exporter
@@ -52,20 +57,19 @@ crit_msg = []
 ok_msg = []
 
 protocol = "s" if args.ssl else ""
-url = "http%s://%s:%s/api/nodes/%s" % ( protocol, args.hostname, args.port, args.node )
+url = "http%s://%s:%s/api/nodes/%s" % (protocol, args.hostname, args.port, args.node)
 print(url)
 
 try:
     response = requests.get(url, auth=(args.user, args.password))
-    
-    
+
     # If the response was successful, no Exception will be raised
     response.raise_for_status()
 except HTTPError as http_err:
-    print("UNKNOWN:HTTP error occurred: ", http_err )
+    print("UNKNOWN:HTTP error occurred: ", http_err)
     print(sys.exit(3))
 except Exception as err:
-    print("UNKNOWN:Other error occured: ", err )
+    print("UNKNOWN:Other error occured: ", err)
     print(sys.exit(3))
 else:
     print('Success!')
@@ -78,10 +82,22 @@ except ValueError:
 # /api/nodes returns a list of dicts...
 # Single node endpoint returns dict.
 if isinstance(nodes, dict):
-    nodes = [ nodes ]
+    nodes = [nodes]
 
 for node in nodes:
+    if args.metric not in node:
+        print("UNKNOWN: Could not find metric ", args.metric,
+              " in node ", node)
+        print(sys.exit(3))
     print(node['name'])
-    print(node['mem_used'])
-    print(node['mem_limit'])
-
+    if args.metric_limit not in node:
+        print("UNKNOWN: Could not find metric ", args.metric_limit,
+              " in node ", node)
+        print(sys.exit(3))
+    print(node['name'])
+    print(node[args.metric])
+    print(node[args.metric_limit])
+    print(node['proc_used'])
+    print(node['proc_total'])
+    print(node['fd_used'])
+    print(node['fd_total'])
