@@ -36,7 +36,8 @@ $ ./check_rabbitmq_node.py -hostname localhost -metric "proc_used" -metric_limit
 OK rabbit@my-rabbit: 0.04% proc_used/proc_total
 $ ./check_rabbitmq_node.py -hostname localhost -metric "fd_used" -metric_limit "fd_total"
 OK rabbit@my-rabbit: 3.22% fd_used/fd_total
-# Specify node:
+
+### Specify node:
 $ ./check_rabbitmq_node.py -hostname localhost -node "rabbit@my-rabbit"
 OK rabbit@my-rabbit: 21.52% mem_used/mem_limit
 
